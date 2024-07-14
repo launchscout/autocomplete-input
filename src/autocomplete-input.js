@@ -1,37 +1,61 @@
 import Combobox from '@github/combobox-nav';
 import debounce from './debounce.js';
+import { LitElement, html } from 'lit';
 
-export class AutocompleteInputElement extends HTMLElement {
+export class AutocompleteInputElement extends LitElement {
   static formAssociated = true;
 
-  static observedAttributes = ['value', 'display-value'];
+  static properties = {
+    value: {},
+    name: {},
+    debounce: {type: Number},
+    displayValue: {attribute: 'display-value'},
+    clearListOnSelect: {attribute: 'clear-list-on-select', type: Boolean}
+  }
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.innerHTML = `
-    <input name="${this.getAttribute('name')}" value="${this.getAttribute('display-value')}" part="input">
-    <slot name="list"></slot>
-    `;
-    const debounceMs = this.getAttribute('debounce') ? parseInt(this.getAttribute('debounce')) : 300;
-    this.searchInput.addEventListener('input', debounce((e) => {
-      this.elementInternals.states.delete('closed');
-      this.elementInternals.states.add('open');
-      this.dispatchEvent(
-        new CustomEvent('autocomplete-search', { detail: { query: this.searchInput.value } }));
-    }, debounceMs));
-    this.list && this.list.addEventListener("combobox-commit", ({ detail, target }) => {
-      this.elementInternals.states.add('selected');
-      this.elementInternals.states.delete('open');
-      this.searchInput.value = target.dataset.label;
-      if (this.elementInternals.form) {
-        this.elementInternals.setFormValue(target.dataset.value);
-        new FormData(this.elementInternals.form).forEach(console.debug);  
-      }
-      if (this.getAttribute('clear-on-select')) { this.searchInput.value = ''; }
-      this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: target.dataset, bubbles: true }));
-    })
+    this.clearListOnSelect = true;
+    this.displayValue = '';
+    this.debounce = 300;
+  }
+
+  firstUpdated() {
     this.elementInternals = this.attachInternals();
+    if (this.elementInternals.form && this.value) {
+      this.elementInternals.setFormValue(this.value, this.displayValue);
+    }
+    this.initializeComboBox();
+  }
+
+  render() {
+    return html`
+    <input name="${this.name}" .value="${this.displayValue}" part="input" autocomplete="off" @input=${debounce((e) => this.onSearch(e), this.debounce)}>
+    <slot name="list" @combobox-commit=${this.onCommit}></slot>
+    `
+  }
+
+  onSearch(e) {
+    this.elementInternals.states.delete('closed');
+    this.elementInternals.states.add('open');
+    this.dispatchEvent(
+      new CustomEvent('autocomplete-search', { detail: { query: this.searchInput.value } }));
+  }
+
+  onCommit({target}) {
+    this.elementInternals.states.add('selected');
+    this.elementInternals.states.delete('open');
+    this.displayValue = target.dataset.label ? target.dataset.label : target.innerText;
+    this.value = target.dataset.value;
+    if (this.elementInternals.form) {
+      this.elementInternals.setFormValue(target.dataset.value);
+      new FormData(this.elementInternals.form).forEach(console.debug);  
+    }
+    if (this.clearListOnSelect) {
+      this.list.replaceChildren();
+      console.debug(this.list);
+    }
+    this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: target.dataset, bubbles: true }));
   }
 
   get list() {
@@ -47,22 +71,6 @@ export class AutocompleteInputElement extends HTMLElement {
       this.combobox = new Combobox(this.searchInput, this.list)
       // when options appear, start intercepting keyboard events for navigation
       this.combobox.start();
-    }
-  }
-
-  connectedCallback() {
-    if (this.elementInternals.form && this.getAttribute("value")) {
-      this.elementInternals.setFormValue(this.getAttribute("value"));
-    }
-    this.initializeComboBox();
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name == 'value') {
-      this.elementInternals.setFormValue(newValue);
-    }
-    if (name == 'display-value') {
-      this.searchInput.value = newValue;
     }
   }
 

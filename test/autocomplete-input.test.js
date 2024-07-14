@@ -38,7 +38,7 @@ describe('the combobox', () => {
     option.click();
   });
 
-  it('sets the value on the form when an option is clicked', async () => {
+  it('sets values when an option is clicked', async () => {
     const formElement = await fixture(`
         <form>
           <autocomplete-input name="foo">
@@ -50,7 +50,26 @@ describe('the combobox', () => {
       `);
     const option = formElement.querySelector('li[data-value="bar"]');
     option.click();
-    expect(new FormData(formElement).get('foo')).to.eq('bar')
+    expect(new FormData(formElement).get('foo')).to.eq('bar');
+    const autocompleteElement = formElement.querySelector('autocomplete-input');
+    expect(autocompleteElement.value).to.equal('bar');
+    expect(autocompleteElement.displayValue).to.equal('Bar');
+  });
+
+  it('clears options', async () => {
+    const formElement = await fixture(`
+        <form>
+          <autocomplete-input name="foo">
+            <ul slot="list">
+              <li role="option" data-value="bar">Bar</li>
+            </ul>
+          </autocomplete-input>
+        </form>
+      `);
+    const option = formElement.querySelector('li[data-value="bar"]');
+    option.click();
+    const options = formElement.querySelectorAll('ul li');
+    expect(options).to.have.length(0);
   });
 
   it('sets form value from value attribute', async () => {
@@ -64,5 +83,17 @@ describe('the combobox', () => {
       </form>
     `);
     expect(new FormData(formElement).get('foo')).to.eq('bar')
+  });
+
+  it('restores on escape', async () => {
+    const formElement = await fixture(`
+      <form>
+        <autocomplete-input name="foo" value="bar">
+          <ul slot="list">
+            <li role="option" data-value="bar">Bar</li>
+          </ul>
+        </autocomplete-input>
+      </form>
+    `);
   });
 });
