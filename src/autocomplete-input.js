@@ -18,10 +18,10 @@ export class AutocompleteInputElement extends LitElement {
     this.clearListOnSelect = true;
     this.displayValue = '';
     this.debounce = 300;
+    this.elementInternals = this.attachInternals();
   }
 
-  firstUpdated() {
-    this.elementInternals = this.attachInternals();
+  updated() {
     if (this.elementInternals.form && this.value) {
       this.elementInternals.setFormValue(this.value, this.displayValue);
     }
@@ -53,7 +53,6 @@ export class AutocompleteInputElement extends LitElement {
     }
     if (this.clearListOnSelect) {
       this.list.replaceChildren();
-      console.debug(this.list);
     }
     this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: target.dataset, bubbles: true }));
   }

@@ -29,6 +29,11 @@
     }
   }
   </script>
+  <style>
+    autocomplete-input [aria-selected] {
+      background-color: aquamarine;
+    }
+  </style>
   <script type="module">
     import '@launchscout/live-template';
     import './src/autocomplete-input.js';
@@ -69,7 +74,7 @@
           <label>Organizations</label>
           <autocomplete-input :sendautocomplete-search="search_organizations" name="organization_id" :value="person.organization && person.organization.id" :display-value="person.organization && person.organization.name">
             <ul slot="list">
-              <li :each="organization in organizations" :data-label="organization.name" :data-value="organization.id" role="option" :text="organization.name"></li> 
+              <li :each="organization in organizations" :data-value="organization.id" role="option" :text="organization.name"></li> 
             </ul>
           </autocomplete-input>
           <span :text="errors.organizations_id"></span>
