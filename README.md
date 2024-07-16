@@ -61,7 +61,7 @@ Alternatively, the `list` attribute may be given the DOM id of a list outside th
 The currently selected option (via keyboard navigation) will be so indicated by adding the `airia-selected` attribute. This allows you to style the selected option like so:
 
 ```css
-  simple-autocomplete [aria-selected='true'] {
+  autocomplete-element [aria-selected='true'] {
     background-color: lavender;
   }
 
