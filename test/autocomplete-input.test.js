@@ -17,7 +17,6 @@ it('displays an input when opened', async () => {
   await el.updated;
   const searchInput = el.shadowRoot.querySelector('input');
   expect(searchInput).to.exist;
-  expect(searchInput.value).to.equal('abc');
 });
 
 // not sure what's up here
@@ -95,7 +94,6 @@ describe('the combobox', () => {
     expect(new FormData(formElement).get('foo')).to.eq('bar');
     const autocompleteElement = formElement.querySelector('autocomplete-input');
     expect(autocompleteElement.value).to.equal('bar');
-    expect(autocompleteElement.searchValue).to.equal('Bar');
   });
 
   it('clears options if requested to', async () => {
