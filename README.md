@@ -46,6 +46,7 @@ Alternatively, the `list` attribute may be given the DOM id of a list outside th
 
 - `autocomplete-search` sent when the value of the input changes and is greater than the `minlength`, debounced by the specified interval.
 - `autocomplete-commit` sent when an item is selected either by pressing Enter or clicking an option
+- `autocomplete-close` sent when the element is open and loses focus, on by user pressing Escape
 
 ## Attributes
 
@@ -54,7 +55,7 @@ Alternatively, the `list` attribute may be given the DOM id of a list outside th
 - `debounce` The time in milliseconds to debounce before sending an `autocomplete-search` event when the user enters text into the input
 - `value` The value which will be initially used to populate the `FormData` of the associated form.
 - `searchValue` The value which will initially be used to populate the search input.
-- `state`
+- `open` The element will start in the Open mode display the text input
 
 ## Styling the selected option
 
