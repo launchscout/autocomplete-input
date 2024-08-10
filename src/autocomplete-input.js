@@ -1,7 +1,6 @@
 import Combobox from '@github/combobox-nav';
 import debounce from './debounce.js';
 import { LitElement, html } from 'lit';
-import { live } from 'lit/directives/live.js';
 
 export class AutocompleteInputElement extends LitElement {
   static formAssociated = true;
@@ -13,7 +12,7 @@ export class AutocompleteInputElement extends LitElement {
     minlength: { type: Number },
     searchValue: { attribute: 'search-value' },
     clearListOnSelect: { attribute: 'clear-list-on-select', type: Boolean },
-    state: {},
+    open: { type: Boolean, converter: (value, _type) => value !== 'false' },
   }
 
   constructor() {
@@ -22,53 +21,71 @@ export class AutocompleteInputElement extends LitElement {
     this.debounce = 300;
     this.minlength = 3;
     this.elementInternals = this.attachInternals();
-    this.state = 'initial';
     this.addEventListener('click', (e) => {
-      if (this.state != 'open') {
+      if (!this.open) {
         this.searchValue = '';
+        this.open = true;
       }
-      this.state = 'open';
+    });
+    this.addEventListener('focusout', (e) => {
+      console.log(e);
     });
   }
 
+  cancel() {
+    this.open = false;
+    setTimeout(() => this.dispatchEvent(new CustomEvent('autocomplete-close', {detail: {query: this.searchInput?.value}})));
+  }
+
+  hasState(state) {
+    return this.elementInternals && this.elementInternals.states.has(state);
+  }
+
   updated() {
-    console.debug('updating...');
-    if (this.elementInternals) {
-      this.elementInternals.states.clear();
-      this.elementInternals.states.add(this.state);
+    if (this.open && !this.hasState('open')) {
+      this.elementInternals.states.add('open');
     }
     if (this.elementInternals.form && this.value) {
       this.elementInternals.setFormValue(this.value, this.searchValue);
     }
-    if (this.state == 'open') {
+    if (this.open) {
       this.searchInput.focus();
     }
     this.initializeComboBox();
   }
 
   render() {
-    return html`${this.state == 'open' ? html`
-    <input name="${this.name}" .value="${this.searchValue}" part="input" autocomplete="off" @input=${debounce((e) => this.onSearch(e), this.debounce)}>
+    return html`${this.open ? html`
+    <input name="${this.name}" .value="${this.searchValue}" @keydown=${this.onKeyDown} part="input" autocomplete="off" @input=${debounce((e) => this.onSearch(e), this.debounce)}>
     ` : html`<slot></slot>`}
-    <slot name="list" @combobox-commit=${this.onCommit}></slot>
+    <slot name="list"></slot>
     `;
   }
 
+  onKeyDown(e) {
+    if (e.key == 'Escape') {
+      this.cancel();
+    }
+    console.log(e);
+  }
+
   onClick(e) {
-    this.searchValue = '';
-    this.state = 'open';
+    if (!this.open) {
+      this.searchValue = '';
+      this.open = true;
+    }
   }
 
   onSearch(e) {
     if (this.searchInput.value.length >= this.minlength) {
-      this.state = 'searching';
+      this.elementInternals.states.add('searching');
       this.dispatchEvent(
         new CustomEvent('autocomplete-search', { detail: { query: this.searchInput.value } }));  
     }
   }
 
   onCommit({ target }) {
-    this.state = 'selected';
+    this.open = false;
     this.searchValue = target.dataset.label ? target.dataset.label : target.innerText;
     this.value = target.dataset.value;
     if (this.elementInternals.form) {
@@ -85,15 +102,19 @@ export class AutocompleteInputElement extends LitElement {
     if (this.getAttribute('list')) {
       return document.querySelector(`#${this.getAttribute('list')}`);
     }
-    const listSlot = this.shadowRoot.querySelector('slot[name="list"]');
-    return listSlot.assignedElements().length > 0 ? listSlot.assignedElements()[0] : undefined;
+    return this.listSlot.assignedElements().length > 0 ? this.listSlot.assignedElements()[0] : undefined;
+  }
+
+  get listSlot() {
+    return this.shadowRoot.querySelector('slot[name="list"]');
   }
 
   initializeComboBox() {
-    if (this.searchInput && this.list) {
+    if (this.searchInput && this.list && (!this.combobox || this.combobox.list !== this.list)) {
       this.combobox = new Combobox(this.searchInput, this.list)
       // when options appear, start intercepting keyboard events for navigation
       this.combobox.start();
+      this.list.addEventListener('combobox-commit', (e) => this.onCommit(e));
     }
   }
 
