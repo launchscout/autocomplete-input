@@ -1,6 +1,6 @@
 {
   "name": "@launchscout/autocomplete-input",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple, event oriented autocomplete custom element",
   "main": "src/autocomplete-input.js",
   "scripts": {
