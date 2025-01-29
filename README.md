@@ -47,7 +47,7 @@ The following parts are available for styling using [part selectors]([text](http
 
 ## Example
 
-See the [autocomplete_testbed]([text](https://github.com/launchscout/autocomplete_testbed)) project for an example of using this component with Phoenix LiveView.
+See the [autocomplete_testbed](https://github.com/launchscout/autocomplete_testbed) project for an example of using this component with Phoenix LiveView.
 
 ## Credits
 
