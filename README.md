@@ -18,29 +18,7 @@ npm install @launchscout/autocomplete-input
 
 ## Providing options
 
-This element requires the user to provide the list of options as inner content to the element using the `list` named slot. This slot is expected to contain a list of options. Each element with `aria-role="option"` will be considered an option. The `data-value` property of the selected item will be set as the value in the FormData.
-
-Example:
-
-```html
-<autocomplete-input name="company">
-  <ul slot="list">
-    <li role="option" data-value="1">Foo Corp</li>
-    <li role="option" data-value="2">Bar Corp</li>
-  </ul>
-</autocomplete-input>
-```
-
-Alternatively, the `list` attribute may be given the DOM id of a list outside the element:
-
-```html
-<autocomplete-input name="company" list="company-list">
-</autocomplete-input>
-<ul id="company-list">
-  <li role="option" data-value="1">Foo Corp</li>
-  <li role="option" data-value="2">Bar Corp</li>
-</ul>
-```
+The `items` attribute should contain a json string of option project. The `label-property` and `value-property` will be used to extract the label and value for each item.
 
 ## Events
 
@@ -56,21 +34,20 @@ Alternatively, the `list` attribute may be given the DOM id of a list outside th
 - `value` The value which will be initially used to populate the `FormData` of the associated form.
 - `searchValue` The value which will initially be used to populate the search input.
 - `open` The element will start in the Open mode display the text input
+- `label-property` The property of each item that will be used as the displayed label, defaults to `name`
+- `value-property` The property of each item that will be used as the displayed label, defaults to `id`
 
-## Styling the selected option
+## Parts
 
-The currently selected option (via keyboard navigation) will be so indicated by adding the `airia-selected` attribute. This allows you to style the selected option like so:
+The following parts are available for styling using [part selectors]([text](https://developer.mozilla.org/en-US/docs/Web/CSS/::part))
 
-```css
-  autocomplete-element [aria-selected='true'] {
-    background-color: lavender;
-  }
-
-```
+- `list` The list of options, only displayed if the autocomplete is open
+- `option` All of the option `li` elements will have this part assigned
+- `selected-option` This is the option currently focused by keyboard navigation
 
 ## Example
 
-The [`index.html`](index.html) file in this directory shows a simple example of choosing people and adding them to a list. It requires the [silly_crm](https://github.com/superchris/silly_crm) example app to be up and running. It will also only work if you've created `Person`s that can be found.
+See the [autocomplete_testbed]([text](https://github.com/launchscout/autocomplete_testbed)) project for an example of using this component with Phoenix LiveView.
 
 ## Credits
 
