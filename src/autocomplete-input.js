@@ -5,6 +5,67 @@ import { LitElement, html, css } from 'lit';
 export class AutocompleteInputElement extends LitElement {
   static formAssociated = true;
   static styles = css`
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    input[part="input"] {
+      box-sizing: border-box;
+      margin-top: 0.5rem;
+      display: block;
+      border-radius: 0.5rem;
+      border: 1px solid rgb(212, 212, 216);
+      --tw-text-opacity: 1;
+      color: rgb(24, 24, 27);
+      font-size: 0.875rem;
+      line-height: 1.5rem;
+      padding: 0.5rem 0.75rem;
+      background-color: white;
+    }
+
+    input[part="input"]:focus {
+      outline: none;
+      border-color: rgb(161, 161, 170);
+    }
+
+    ul[part="list"] {
+      position: absolute;
+      z-index: 1000;
+      background: white;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddd;
+      width: 100%;
+    }
+
+    li[part="option"] {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    li[part="option"]:hover {
+      background-color: #f5f5f5;
+    }
+
+    li[part="selected-option"] {
+      padding: 8px 12px;
+      cursor: pointer;
+      background-color: #e5f7ff;
+      border-left: 3px solid #3b82f6;
+    }
+
+    li[part="selected-option"]:hover {
+      background-color: #f5f5f5;
+    }
+
     .input-wrapper {
       position: relative;
       display: inline-block;
@@ -73,13 +134,13 @@ export class AutocompleteInputElement extends LitElement {
     minLength: { type: Number, attribute: 'min-length' },
     searchValue: { attribute: 'search-value' },
     clearListOnSelect: { attribute: 'clear-list-on-select', type: Boolean },
-    open: { type: Boolean},
+    open: { type: Boolean },
   }
 
   constructor() {
     super();
-    this.labelProperty = 'name';
-    this.valueProperty = 'id';
+    this.labelProperty = 'label';
+    this.valueProperty = 'value';
     this.searchValue = '';
     this.displayValue = 'Choose an organization';
     this.debounce = 300;
@@ -116,13 +177,13 @@ export class AutocompleteInputElement extends LitElement {
 
   render() {
     return this.open ? html`
-      <div class="input-wrapper">
+      <div class="input-wrapper" part="input-wrapper">
         <input name="${this.name}" .value="${this.searchValue}" @keydown=${this.onKeyDown} part="input" autocomplete="off" @input=${debounce((e) => this.onSearch(e), this.debounce)}>
         <button class="cancel-icon" slot="cancel-icon" @click=${this.cancel} aria-label="Clear input">×</button>
       </div>
-      ${this.items.length > 0 ? html`
+      ${this.items?.length > 0 ? html`
         <ul part="list">
-          ${this.items.map((item) => html`<li role="option" part="option" data-value="${item[this.valueProperty]}">${item[this.labelProperty]}</li>`)}
+          ${this.items?.map((item) => html`<li role="option" part="option" data-value="${item[this.valueProperty]}">${item[this.labelProperty]}</li>`)}
         </ul>
       ` : ''}
     ` : html`
@@ -161,6 +222,7 @@ export class AutocompleteInputElement extends LitElement {
       this.items = [];
     }
     this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: target.dataset, bubbles: true }));
+    this.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
   get list() {

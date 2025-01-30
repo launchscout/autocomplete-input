@@ -49,7 +49,7 @@ it('only dispatches search event when the mininum length is met', async () => {
 describe('the combobox', () => {
   it('builds a combobox and sends autocomplete-commit for a slotted list', async () => {
     const el = await fixture(`
-      <autocomplete-input name="foo" open items='[{"id": "foo", "name": "Foo"}]'>
+      <autocomplete-input name="foo" open items='[{"value": "foo", "label": "Foo"}]'>
       </autocomplete-input>
     `);
     const option = el.shadowRoot.querySelector('li[data-value="foo"]');
@@ -63,7 +63,7 @@ describe('the combobox', () => {
   it('sets values when an option is clicked', async () => {
     const formElement = await fixture(`
         <form>
-          <autocomplete-input name="foo" open items='[{"id": "bar", "name": "Bar"}]'>
+          <autocomplete-input name="foo" open items='[{"value": "bar", "label": "Bar"}]'>
           </autocomplete-input>
         </form>
       `);
