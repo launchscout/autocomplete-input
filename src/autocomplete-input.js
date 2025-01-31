@@ -207,7 +207,7 @@ export class AutocompleteInputElement extends LitElement {
     if (this.searchInput.value.length >= this.minLength) {
       this.elementInternals.states.add('searching');
       this.dispatchEvent(
-        new CustomEvent('autocomplete-search', { detail: { query: this.searchInput.value } }));
+        new CustomEvent('autocomplete-search', { detail: { query: this.searchInput.value, name: this.name } }));
     }
   }
 
@@ -221,7 +221,7 @@ export class AutocompleteInputElement extends LitElement {
     if (this.clearListOnSelect) {
       this.items = [];
     }
-    this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: target.dataset, bubbles: true }));
+    this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: { name: this.name, ...target.dataset }, bubbles: true }));
     this.dispatchEvent(new Event('input', { bubbles: true }));
   }
 

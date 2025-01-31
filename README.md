@@ -22,16 +22,23 @@ The `items` attribute should contain a json string of option project. The `label
 
 ## Events
 
-- `autocomplete-search` sent when the value of the input changes and is greater than the `minlength`, debounced by the specified interval.
-- `autocomplete-commit` sent when an item is selected either by pressing Enter or clicking an option
-- `autocomplete-close` sent when the element is open and loses focus, on by user pressing Escape
+- `autocomplete-search` sent when the value of the input changes and is greater than the `minlength`, debounced by the specified interval. It will contain a detail with the following properties:
+  - `name` the value of the name attribute for the element. Useful if you have multiple autocompletes sending events to the same back end handler
+  - `query` the value the user has typed into the search input
+- `autocomplete-commit` sent when an item is selected either by pressing Enter or clicking an option. It will contain a 
+detail with the following properties:
+  - `name` the value of the name attribute for the element. Useful if you have multiple autocompletes sending events to the same back end handler
+  - `value` the value for the selected option
+- `autocomplete-close` sent when the element is open and loses focus, or by user pressing Escape
 
 ## Attributes
 
 - `name` This is a required attribute for setting the correct FormData value. It works exactly the same way as the `name` attribute of any other form input.
-- `clear-list-on-select` If true, will cause the options list to have it's children removed when an `autocomplete-commit` event is about to be dispatched.
 - `debounce` The time in milliseconds to debounce before sending an `autocomplete-search` event when the user enters text into the input
 - `value` The value which will be initially used to populate the `FormData` of the associated form.
+- `display-value` this will appear when the element is in the closed state, with an icon next to it indicating
+  the user can click to search for options
+- `min-length` the number of characters the user needs to type to trigger a search.
 - `searchValue` The value which will initially be used to populate the search input.
 - `open` The element will start in the Open mode display the text input
 - `label-property` The property of each item that will be used as the displayed label, defaults to `name`

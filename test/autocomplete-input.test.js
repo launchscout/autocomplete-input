@@ -24,13 +24,12 @@ it('emits an autocomplete-search event', async () => {
   const el = await fixture(`
     <autocomplete-input name="foo" open debounce="10"></autocomplete-input>
   `);
-  // el.click();
-  // await el.updated;
   const searchInput = el.shadowRoot.querySelector('input');
-  searchInput.value = 'foo';
+  searchInput.value = 'bar';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   const { detail } = await oneEvent(el, 'autocomplete-search');
-  expect(detail.query).to.equal('foo');
+  expect(detail.query).to.equal('bar');
+  expect(detail.name).to.equal('foo');
 });
 
 it('only dispatches search event when the mininum length is met', async () => {
@@ -49,13 +48,14 @@ it('only dispatches search event when the mininum length is met', async () => {
 describe('the combobox', () => {
   it('builds a combobox and sends autocomplete-commit for a slotted list', async () => {
     const el = await fixture(`
-      <autocomplete-input name="foo" open items='[{"value": "foo", "label": "Foo"}]'>
+      <autocomplete-input name="bar" open items='[{"value": "foo", "label": "Foo"}]'>
       </autocomplete-input>
     `);
     const option = el.shadowRoot.querySelector('li[data-value="foo"]');
     el.addEventListener('autocomplete-commit', (e) => {
       console.debug(e.detail)
       expect(e.detail.value).to.equal('foo');
+      expect(e.detail.name).to.equal('bar');
     });
     option.click();
   });
