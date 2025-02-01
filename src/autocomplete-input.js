@@ -129,7 +129,7 @@ export class AutocompleteInputElement extends LitElement {
       type: String,
       attribute: 'display-value',
     },
-    items: { type: Array },
+    items: { type: Array, reflect: true },
     debounce: { type: Number },
     minLength: { type: Number, attribute: 'min-length' },
     searchValue: { attribute: 'search-value' },
@@ -150,11 +150,13 @@ export class AutocompleteInputElement extends LitElement {
   }
 
   cancel() {
+    this.dispatchEvent(new CustomEvent('autocomplete-close', { detail: { name: this.name } }));
     this.open = false;
     this.items = [];
   }
 
   startSearch() {
+    this.dispatchEvent(new CustomEvent('autocomplete-open', { detail: { name: this.name } }));
     this.open = true;
   }
 
