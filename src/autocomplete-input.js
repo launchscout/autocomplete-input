@@ -71,12 +71,12 @@ export class AutocompleteInputElement extends LitElement {
       display: inline-block;
       width: 100%;
     }
-    
+
     input {
       width: 100%;
       padding-right: 30px; /* Make room for the cancel icon */
     }
-    
+
     .cancel-icon {
       position: absolute;
       right: 8px;
@@ -90,7 +90,7 @@ export class AutocompleteInputElement extends LitElement {
       padding: 4px;
       line-height: 1;
     }
-    
+
     .cancel-icon:hover {
       color: #333;
     }
@@ -117,6 +117,7 @@ export class AutocompleteInputElement extends LitElement {
   static properties = {
     value: {},
     name: {},
+    label: {},
     labelProperty: {
       type: String,
       attribute: 'label-property',
@@ -134,6 +135,7 @@ export class AutocompleteInputElement extends LitElement {
     minLength: { type: Number, attribute: 'min-length' },
     searchValue: { attribute: 'search-value' },
     clearListOnSelect: { attribute: 'clear-list-on-select', type: Boolean },
+    allowCustomValue: { attribute: 'allow-custom-value', type: Boolean },
     open: { type: Boolean },
   }
 
@@ -147,6 +149,7 @@ export class AutocompleteInputElement extends LitElement {
     this.minLength = 3;
     this.items = [];
     this.elementInternals = this.attachInternals();
+    this.allowCustomValue = false;
   }
 
   cancel() {
@@ -199,31 +202,85 @@ export class AutocompleteInputElement extends LitElement {
   }
 
   onKeyDown(e) {
-    if (e.key == 'Escape') {
+    if (e.key === 'Escape') {
       this.cancel();
       e.stopPropagation();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+
+      const selectedOption = this.list?.querySelector('li[part="selected-option"]');
+
+      if (selectedOption) {
+        this.onCommit({ target: selectedOption });
+      // If the component allows custom values and the user has typed something,
+      // commit that value.
+      } else if (this.allowCustomValue && this.searchInput.value) {
+        this.onCommit({ target: this.searchInput });
+      }
+      e.stopPropagation();
+    } else if (this.isDeletionKey(e.key)) {
+      setTimeout(() => {
+        this.onDelete(e);
+      }, 0);
     }
   }
 
+  isDeletionKey(key) {
+    return key === 'Backspace' || key === 'Delete';
+  }
+
+  onDelete(e) {
+    const currentValue = this.searchInput.value;
+
+    // Re-trigger search for the remaining text
+    this.elementInternals.states.add('searching');
+    this.dispatchEvent(
+      new CustomEvent('autocomplete-search', {
+        detail: {
+          query: currentValue,
+          name: this.name,
+          label: this.label,
+        }
+      })
+    );
+  }
+
   onSearch(e) {
-    if (this.searchInput.value.length >= this.minLength) {
+    const searchInput = this.searchInput;
+
+    if (searchInput && searchInput.value.length >= this.minLength) {
       this.elementInternals.states.add('searching');
       this.dispatchEvent(
-        new CustomEvent('autocomplete-search', { detail: { query: this.searchInput.value, name: this.name } }));
+        new CustomEvent('autocomplete-search', {
+          detail: {
+            query: this.searchInput.value,
+            name: this.name,
+            label: this.label
+          }
+        })
+      );
     }
   }
 
   onCommit({ target }) {
     this.open = false;
     this.displayValue = target.dataset.label ? target.dataset.label : target.innerText;
-    this.value = target.dataset.value;
+    this.value = target.value || target.dataset.value;
+
     if (this.elementInternals.form) {
-      this.elementInternals.setFormValue(target.dataset.value);
+      this.elementInternals.setFormValue(this.value);
     }
     if (this.clearListOnSelect) {
       this.items = [];
     }
-    this.dispatchEvent(new CustomEvent('autocomplete-commit', { detail: { name: this.name, ...target.dataset }, bubbles: true }));
+    this.dispatchEvent(new CustomEvent('autocomplete-commit', {
+      detail: {
+        name: this.name,
+        value: this.value,
+        label: this.label
+      },
+      bubbles: true
+    }));
     this.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
